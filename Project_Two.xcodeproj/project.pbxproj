@@ -7,13 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E7A0D0DA2D4531F0003D4A31 /* Project_TwoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D0D92D4531F0003D4A31 /* Project_TwoApp.swift */; };
+		E7A0D0DA2D4531F0003D4A31 /* FinancePlaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D0D92D4531F0003D4A31 /* FinancePlaner.swift */; };
 		E7A0D0DC2D4531F0003D4A31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D0DB2D4531F0003D4A31 /* ContentView.swift */; };
 		E7A0D0DE2D4531F1003D4A31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7A0D0DD2D4531F1003D4A31 /* Assets.xcassets */; };
 		E7A0D0E12D4531F1003D4A31 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7A0D0E02D4531F1003D4A31 /* Preview Assets.xcassets */; };
 		E7A0D0EB2D4531F1003D4A31 /* Project_TwoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D0EA2D4531F1003D4A31 /* Project_TwoTests.swift */; };
 		E7A0D0F52D4531F1003D4A31 /* Project_TwoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D0F42D4531F1003D4A31 /* Project_TwoUITests.swift */; };
 		E7A0D0F72D4531F1003D4A31 /* Project_TwoUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D0F62D4531F1003D4A31 /* Project_TwoUITestsLaunchTests.swift */; };
+		E7A0D1062D45336B003D4A31 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D1052D45336B003D4A31 /* DashboardView.swift */; };
+		E7A0D1082D4533B3003D4A31 /* TransactionVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D1072D4533B3003D4A31 /* TransactionVIew.swift */; };
+		E7A0D10A2D4533D5003D4A31 /* BudgetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D1092D4533D5003D4A31 /* BudgetsView.swift */; };
+		E7A0D10C2D4533FA003D4A31 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A0D10B2D4533FA003D4A31 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,7 +39,7 @@
 
 /* Begin PBXFileReference section */
 		E7A0D0D62D4531F0003D4A31 /* Project_Two.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Project_Two.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E7A0D0D92D4531F0003D4A31 /* Project_TwoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project_TwoApp.swift; sourceTree = "<group>"; };
+		E7A0D0D92D4531F0003D4A31 /* FinancePlaner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancePlaner.swift; sourceTree = "<group>"; };
 		E7A0D0DB2D4531F0003D4A31 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		E7A0D0DD2D4531F1003D4A31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E7A0D0E02D4531F1003D4A31 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -44,6 +48,10 @@
 		E7A0D0F02D4531F1003D4A31 /* Project_TwoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Project_TwoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7A0D0F42D4531F1003D4A31 /* Project_TwoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project_TwoUITests.swift; sourceTree = "<group>"; };
 		E7A0D0F62D4531F1003D4A31 /* Project_TwoUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Project_TwoUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		E7A0D1052D45336B003D4A31 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		E7A0D1072D4533B3003D4A31 /* TransactionVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionVIew.swift; sourceTree = "<group>"; };
+		E7A0D1092D4533D5003D4A31 /* BudgetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetsView.swift; sourceTree = "<group>"; };
+		E7A0D10B2D4533FA003D4A31 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,7 +102,11 @@
 		E7A0D0D82D4531F0003D4A31 /* Project_Two */ = {
 			isa = PBXGroup;
 			children = (
-				E7A0D0D92D4531F0003D4A31 /* Project_TwoApp.swift */,
+				E7A0D10B2D4533FA003D4A31 /* SettingsView.swift */,
+				E7A0D1072D4533B3003D4A31 /* TransactionVIew.swift */,
+				E7A0D1092D4533D5003D4A31 /* BudgetsView.swift */,
+				E7A0D1052D45336B003D4A31 /* DashboardView.swift */,
+				E7A0D0D92D4531F0003D4A31 /* FinancePlaner.swift */,
 				E7A0D0DB2D4531F0003D4A31 /* ContentView.swift */,
 				E7A0D0DD2D4531F1003D4A31 /* Assets.xcassets */,
 				E7A0D0DF2D4531F1003D4A31 /* Preview Content */,
@@ -258,7 +270,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				E7A0D0DC2D4531F0003D4A31 /* ContentView.swift in Sources */,
-				E7A0D0DA2D4531F0003D4A31 /* Project_TwoApp.swift in Sources */,
+				E7A0D1082D4533B3003D4A31 /* TransactionVIew.swift in Sources */,
+				E7A0D10A2D4533D5003D4A31 /* BudgetsView.swift in Sources */,
+				E7A0D10C2D4533FA003D4A31 /* SettingsView.swift in Sources */,
+				E7A0D1062D45336B003D4A31 /* DashboardView.swift in Sources */,
+				E7A0D0DA2D4531F0003D4A31 /* FinancePlaner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
