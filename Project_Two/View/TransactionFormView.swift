@@ -4,131 +4,88 @@
 //
 //  Created by Marco Worni on 28.01.2025.
 //
-
 import SwiftUI
 
 struct TransactionFormView: View {
-    @Binding var isEditingTransaction: Bool
-    @Binding var newTransactionName: String
-    @Binding var newTransactionAmount: String
-    @Binding var selectedCategory: Category?
+    @ObservedObject var viewModel: TransactionsViewModel // Zugriff auf das ViewModel
 
-    @State private var isShowingCategorySelection: Bool = false
-
-    let categories: [Category]
-    let parentCategories: [String: Color]
-    var onSave: (String, Double, Category) -> Void
-    var onReset: () -> Void // Callback to reset the form
+    let onSave: () -> Void // Callback für das Speichern
 
     var body: some View {
         VStack {
-            Text(isEditingTransaction ? "Edit Transaction" : "Add New Transaction")
+            Text(viewModel.isEditingTransaction ? "Edit Transaction" : "Add New Transaction")
                 .font(.headline)
                 .padding()
-            HStack {
-                Button(action: {
-                    isShowingCategorySelection = true
-                }) {
-                    HStack {
-                            if let category = selectedCategory {
-                                Image(systemName: category.symbol)
-                                    .foregroundColor(category.color)
-                            } else {
-                                Image(systemName: "questionmark.circle")
-                                    .foregroundColor(.gray)
-                            }
-                        }
+                .foregroundColor(Color(UIColor.label))
+
+            TextField("Transaction Name", text: $viewModel.newTransactionName)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            TextField("Amount", text: $viewModel.newTransactionAmount)
+                .keyboardType(.decimalPad)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            Button(action: {
+                viewModel.showCategoryPicker = true
+            }) {
+                HStack {
+                    Text(viewModel.selectedCategory?.name ?? "Select Category")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(8)
+            }
+            .padding(.horizontal)
+            .sheet(isPresented: .constant(viewModel.showCategoryPicker == true && viewModel.selectedCategory == nil)) {
+                VStack {
+                    Text("Select a Category")
+                        .font(.headline)
                         .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                    }
-                    .padding(.horizontal)
-                    .sheet(isPresented: $isShowingCategorySelection) {
-                        VStack {
-                            Text("Select a Category")
-                                .font(.headline)
-                                .padding()
-                            
-                            List {
-                                ForEach(parentCategories.keys.sorted(), id: \..self) { parent in
-                                    Section(header: Text(parent).foregroundColor(parentCategories[parent])) {
-                                        ForEach(categories.filter { $0.parentCategory == parent }) { category in
-                                            Button(action: {
-                                                selectedCategory = category
-                                                isShowingCategorySelection = false
-                                            }) {
-                                                HStack {
-                                                    Image(systemName: category.symbol)
-                                                        .foregroundColor(category.color)
-                                                    Text(category.name)
-                                                }
-                                            }
+
+                    List {
+                        ForEach(viewModel.parentCategories.keys.sorted(), id: \.self) { parent in
+                            Section(header: Text(parent).foregroundColor(viewModel.parentCategories[parent])) {
+                                ForEach(viewModel.categories.filter { $0.parentCategory == parent }) { category in
+                                    Button(action: {
+                                        viewModel.selectedCategory = category
+                                    }) {
+                                        HStack {
+                                            Image(systemName: category.symbol)
+                                                .foregroundColor(category.color)
+                                            Text(category.name)
                                         }
                                     }
                                 }
                             }
                         }
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(20)
                     }
-                    TextField("Transaction Name", text: $newTransactionName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
-                    
-                    TextField("Amount", text: $newTransactionAmount)
-                        .keyboardType(.decimalPad)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
+                }
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(20)
             }
 
             Button(action: {
-                if let amount = Double(newTransactionAmount), let category = selectedCategory {
-                    onSave(newTransactionName, amount, category)
-                }
+                onSave()
             }) {
                 Text("Save")
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(newTransactionName.isEmpty || newTransactionAmount.isEmpty || selectedCategory == nil ? Color.gray : Color.blue)
-                    .foregroundColor(.white)
+                    .background(viewModel.newTransactionName.isEmpty || viewModel.newTransactionAmount.isEmpty || viewModel.selectedCategory == nil ? Color(UIColor.tertiarySystemBackground) : Color.blue)
+                    .foregroundColor(viewModel.newTransactionName.isEmpty || viewModel.newTransactionAmount.isEmpty || viewModel.selectedCategory == nil ? Color(UIColor.systemGray) : Color.white)
                     .cornerRadius(8)
                     .padding(.horizontal)
             }
-            .disabled(newTransactionName.isEmpty || newTransactionAmount.isEmpty || selectedCategory == nil)
+            .disabled(viewModel.newTransactionName.isEmpty || viewModel.newTransactionAmount.isEmpty || viewModel.selectedCategory == nil)
 
             Spacer()
         }
-        .onAppear {
-                    if !isEditingTransaction {
-                        onReset() // Reset the form when adding a new transaction
-                    }
-                }
         .padding()
-        .presentationDetents([.fraction(0.3)])
-        .background(Color.white)
+        .presentationDetents([.fraction(0.5)])
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(20)
     }
-}
-
-#Preview {
-    TransactionFormView(
-                isEditingTransaction: .constant(false),
-                newTransactionName: .constant(""),
-                newTransactionAmount: .constant(""),
-                selectedCategory: .constant(nil),
-                categories: [
-                    Category(symbol: "cart", name: "Groceries", color: .orange, parentCategory: "Essentials"),
-                    Category(symbol: "house", name: "Rent", color: .blue, parentCategory: "Housing")
-                ],
-                parentCategories: [
-                    "Essentials": .orange,
-                    "Housing": .blue
-                ],
-                onSave: { name, amount, category in
-                    print("Transaction saved: \(name), \(amount), \(category.name)")
-                },
-                onReset: {
-                                print("Form reset")
-                            }
-            )
 }

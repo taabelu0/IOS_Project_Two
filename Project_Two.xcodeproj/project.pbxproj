@@ -45,7 +45,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		82767BA12D4982A200E3FA07 /* Model */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Model; sourceTree = "<group>"; };
 		82767BA22D4982A900E3FA07 /* View */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = View; sourceTree = "<group>"; };
-		82767BA32D4982B100E3FA07 /* Controller */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Controller; sourceTree = "<group>"; };
+		82767BB92D49934C00E3FA07 /* ModelView */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ModelView; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,8 +96,8 @@
 		E7A0D0D82D4531F0003D4A31 /* Project_Two */ = {
 			isa = PBXGroup;
 			children = (
+				82767BB92D49934C00E3FA07 /* ModelView */,
 				82767BA12D4982A200E3FA07 /* Model */,
-				82767BA32D4982B100E3FA07 /* Controller */,
 				82767BA22D4982A900E3FA07 /* View */,
 				E7A0D0DD2D4531F1003D4A31 /* Assets.xcassets */,
 				E7A0D0DF2D4531F1003D4A31 /* Preview Content */,
@@ -148,7 +148,7 @@
 			fileSystemSynchronizedGroups = (
 				82767BA12D4982A200E3FA07 /* Model */,
 				82767BA22D4982A900E3FA07 /* View */,
-				82767BA32D4982B100E3FA07 /* Controller */,
+				82767BB92D49934C00E3FA07 /* ModelView */,
 			);
 			name = Project_Two;
 			productName = Project_Two;

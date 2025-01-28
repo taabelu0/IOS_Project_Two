@@ -4,27 +4,15 @@
 //
 //  Created by Marco Worni on 28.01.2025.
 //
-
 import SwiftUI
 
 struct TransactionsView: View {
-    @StateObject private var controller = TransactionsController()
-
-    @State private var newTransactionName: String = ""
-    @State private var newTransactionAmount: String = ""
-    @State private var selectedCategory: Category? = nil
-    @State private var isShowingAddTransaction: Bool = false
-    @State private var isShowingCategorySelection: Bool = false
-    @State private var isEditingTransaction: Bool = false
-    @State private var editingTransaction: Transaction? = nil
-    @State private var isShowingAddCategory: Bool = false
-    @State private var newCategoryName: String = ""
-    @State private var selectedParentCategory: String? = nil
+    @StateObject private var viewModel = TransactionsViewModel()
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(controller.transactions) { transaction in
+                ForEach(viewModel.transactions) { transaction in
                     HStack {
                         Text(transaction.name)
                             .padding()
@@ -33,71 +21,43 @@ struct TransactionsView: View {
                         Spacer()
                         Text(String(format: "$%.2f", transaction.amount))
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        editTransaction(transaction)
-                    }
                 }
             }
             .navigationTitle("Transactions")
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        isShowingAddCategory = true
-                    }) {
-                        Image(systemName: "folder.badge.plus")
-                    }
-
-                    Button(action: {
-                        isShowingAddTransaction = true
-                    }) {
-                        Image(systemName: "plus")
-                    }
+                    Button("Add category",
+                           systemImage: "folder.badge.plus",
+                           action: {
+                                viewModel.isShowingAddCategory = true
+                        }
+                    )
+                    .labelStyle(.iconOnly)
+                    
+                    Button("Add transaction",
+                           systemImage: "plus",
+                           action: {
+                        viewModel.isShowingAddTransaction = true
+                        }
+                    )
+                    .labelStyle(.iconOnly)
                 }
             }
-            .sheet(isPresented: $isShowingAddTransaction) {
-                TransactionFormView(
-                    isEditingTransaction: $isEditingTransaction,
-                    newTransactionName: $newTransactionName,
-                    newTransactionAmount: $newTransactionAmount,
-                    selectedCategory: $selectedCategory,
-                    categories: controller.categories,
-                    parentCategories: controller.parentCategories,
-                    onSave: { name, amount, category in
-                        if isEditingTransaction, let editingTransaction = editingTransaction {
-                            controller.updateTransaction(transaction: editingTransaction, name: name, amount: amount, category: category)
-                        } else {
-                            controller.addTransaction(name: name, amount: amount, category: category)
-                        }
-                        isShowingAddTransaction = false
-                    },
-                    onReset: {
-                                newTransactionName = ""
-                                newTransactionAmount = ""
-                                selectedCategory = nil
-                            }
-                )
+            .sheet(isPresented: $viewModel.isShowingAddTransaction) {
+                TransactionFormView(viewModel: viewModel,
+                    onSave: {
+                        viewModel.addTransaction()
+                        viewModel.isShowingAddTransaction = false
+                    })
             }
-            .sheet(isPresented: $isShowingAddCategory) {
-                CategoryFormView(
-                    parentCategories: controller.parentCategories.keys.sorted(),
-                    newCategoryName: $newCategoryName,
-                    selectedParentCategory: $selectedParentCategory,
-                    onSave: { name, parent in
-                        controller.addCategory(name: name, symbol: "questionmark", parent: parent)
-                        isShowingAddCategory = false
-                    }
-                )
+            .sheet(isPresented: $viewModel.isShowingAddCategory) {
+                CategoryFormView(viewModel: viewModel,
+                    onSave: {
+                    viewModel.addCategory()
+                    viewModel.isShowingAddCategory = false
+                })
             }
         }
     }
-
-    private func editTransaction(_ transaction: Transaction) {
-        editingTransaction = transaction
-        newTransactionName = transaction.name
-        newTransactionAmount = String(transaction.amount)
-        selectedCategory = transaction.category
-        isEditingTransaction = true
-        isShowingAddTransaction = true
-    }
 }
+

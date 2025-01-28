@@ -12,11 +12,3 @@ struct Transaction: Identifiable {
     var category: Category
     var amount: Double
 }
-
-struct Category: Identifiable {
-    let id = UUID()
-    var symbol: String
-    var name: String
-    var color: Color
-    var parentCategory: String?
-}
