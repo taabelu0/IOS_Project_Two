@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = TransactionsViewModel() // Shared ViewModel
     var body: some View {
         TabView {
             DashboardView()
@@ -15,12 +16,12 @@ struct ContentView: View {
                     Label("Dashboard", systemImage: "house.fill")
                 }
             
-            TransactionsView()
+            TransactionsView(viewModel: viewModel)
                 .tabItem {
                     Label("Transactions", systemImage: "list.bullet")
                 }
             
-            BudgetsView()
+            BudgetsView(viewModel: viewModel)
                 .tabItem {
                     Label("Budgets", systemImage: "chart.pie.fill")
                 }

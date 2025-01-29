@@ -19,6 +19,7 @@ class TransactionsViewModel: ObservableObject {
         "Housing": .blue,
         "Transportation": .green
     ]
+    @Published var budgets: [Budget] = []
 
     // Form state for creating or editing a transaction
     @Published var isEditingTransaction: Bool = false
@@ -33,10 +34,10 @@ class TransactionsViewModel: ObservableObject {
     @Published var newCategoryName: String = ""
     @Published var selectedParentCategory: String? = nil
     
-    // Zustand für den Filter
+    // State for filter
     @Published var selectedFilter: String = "All"
 
-    // Filterlogik
+    // Filter logic transactions
     var filteredTransactions: [Transaction] {
         if selectedFilter == "All" {
             return transactions
@@ -48,6 +49,36 @@ class TransactionsViewModel: ObservableObject {
             return transactions.filter { $0.category.name == selectedFilter }
         }
     }
+    
+    // Filter for parentCategories
+    var filteredParentCategories: [String: Color] {
+        if selectedFilter == "All" {
+            // Zeige alle Überkategorien an
+            return parentCategories
+        } else if parentCategories.keys.contains(selectedFilter) {
+            // Filtere nach einer bestimmten Überkategorie
+            return [selectedFilter: parentCategories[selectedFilter]!]
+        } else if let category = categories.first(where: { $0.name == selectedFilter }),
+                  let parent = category.parentCategory { // Unwrap `category.parentCategory`
+            // Filtere nach der Überkategorie, die zu einer spezifischen Kategorie gehört
+            return [parent: parentCategories[parent]!]
+        }
+        return parentCategories // Fallback: Zeige alle Überkategorien
+    }
+
+    // Filter für categories
+    var filteredCategories: [Category] {
+        if selectedFilter == "All" {
+            return categories
+        } else if parentCategories.keys.contains(selectedFilter) {
+            // Falls eine Überkategorie gewählt wurde, zeige alle ihre Unterkategorien
+            return categories.filter { $0.parentCategory == selectedFilter }
+        } else {
+            // Falls eine spezifische Kategorie gewählt wurde, zeige nur diese
+            return categories.filter { $0.name == selectedFilter }
+        }
+    }
+
 
     // Add a new transaction
     func addTransaction() {
@@ -93,5 +124,62 @@ class TransactionsViewModel: ObservableObject {
         newCategoryName = ""
         selectedParentCategory = nil
     }
+    
+    // Parent Category total
+    func totalForParentCategory(_ parent: String) -> Double {
+        let filteredCategories = categories.filter { $0.parentCategory == parent }
+        return filteredCategories.reduce(0) { total, category in
+            total + totalForCategory(category)
+        }
+    }
+    
+    // Category total
+    func totalForCategory(_ category: Category) -> Double {
+        return transactions
+            .filter { $0.category.name == category.name }
+            .reduce(0) { total, transaction in
+                total + transaction.amount
+            }
+    }
+    
+    
+    func addBudget(name: String, amount: Double, category: Category?) {
+        let budget = Budget(name: name, amount: amount, category: category ?? Category(symbol: "circle", name: "All Categories", color: .gray, parentCategory: nil))
+        budgets.append(budget)
+    }
+    
+    func totalBudget() -> Double {
+        return budgets.reduce(0) { $0 + $1.amount }
+    }
+
+    func totalSpent() -> Double {
+        return transactions.reduce(0) { $0 + $1.amount }
+    }
+    
+    func totalBudgetRemaining() -> Double {
+        return totalBudget() - totalSpent()
+    }
+
+    // Pie Chart für Überkategorien
+    func budgetDataForParentCategories() -> [BudgetChartData] {
+        return parentCategories.keys.compactMap { parent in
+            let budgetForParent = budgets.filter { $0.category.parentCategory == parent }.reduce(0) { $0 + $1.amount }
+            let spentForParent = transactions.filter { $0.category.parentCategory == parent }.reduce(0) { $0 + $1.amount }
+            return budgetForParent > 0 ? BudgetChartData(name: parent, amount: spentForParent, color: parentCategories[parent]!) : nil
+        }
+    }
+
+    // Pie Chart für Unterkategorien
+    func budgetDataForSubcategories() -> [BudgetChartData] {
+        guard parentCategories.keys.contains(selectedFilter) else { return [] }
+        return budgets
+            .filter { $0.category.parentCategory == selectedFilter }
+            .map { budget in
+                let spent = transactions.filter { $0.category.name == budget.category.name }.reduce(0) { $0 + $1.amount }
+                return BudgetChartData(name: budget.category.name, amount: spent, color: budget.category.color)
+            }
+    }
+
 }
+
 

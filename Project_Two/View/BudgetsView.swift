@@ -4,46 +4,57 @@
 //
 //  Created by Luca Bertonazzi on 25.01.2025.
 //
-
 import SwiftUI
 
 struct BudgetsView: View {
+    @ObservedObject var viewModel: TransactionsViewModel
+    @State private var isFilterSheetPresented: Bool = false
+    @State private var isAddingBudget: Bool = false
+
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
-                Text("Budgets")
-                    .font(.headline)
-                
+            VStack {
                 HStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.purple.opacity(0.3))
-                        .frame(height: 100)
-                        .overlay(Text("Budget 1").foregroundColor(.purple))
-                    
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.orange.opacity(0.3))
-                        .frame(height: 100)
-                        .overlay(Text("Budget 2").foregroundColor(.orange))
+                    // Filter-Icon am linken Rand
+                    Button(action: {
+                        isFilterSheetPresented = true
+                    }) {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .font(.title2)
+                    }
+                    .padding(.leading)
+                    Spacer(minLength: 1)
+                    // Plus rechts in der Toolbar
+                    Button(action: {
+                        isAddingBudget = true
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                    .padding(.trailing)
                 }
-                .padding(.horizontal)
-                
-                HStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.red.opacity(0.3))
-                        .frame(height: 100)
-                        .overlay(Text("Budget 3").foregroundColor(.red))
-                    
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.yellow.opacity(0.3))
-                        .frame(height: 100)
-                        .overlay(Text("Budget 4").foregroundColor(.yellow))
+                BudgetPieChartView(viewModel: viewModel)
+
+                // Budget-Liste
+                List {
+                    ForEach(viewModel.budgets) { budget in
+                        VStack(alignment: .leading) {
+                            Text(budget.name)
+                                .font(.headline)
+                            Text("Category: \(budget.category.name)")
+                                .foregroundColor(.secondary)
+                            Text(String(format: "$%.2f", budget.amount))
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
-                .padding(.horizontal)
-                
-                Spacer()
             }
-            .padding()
             .navigationTitle("Budgets")
+            .sheet(isPresented: $isFilterSheetPresented) {
+                FilterView(viewModel: viewModel)
+            }
+            .sheet(isPresented: $isAddingBudget) {
+                BudgetFormView(viewModel: viewModel, isPresented: $isAddingBudget)
+            }
         }
     }
 }

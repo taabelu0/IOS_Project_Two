@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct TransactionsView: View {
-    @StateObject private var viewModel = TransactionsViewModel()
+    @ObservedObject var viewModel: TransactionsViewModel
     @State private var isFilterSheetPresented: Bool = false // Für das Filter-Modal
 
     var body: some View {
@@ -29,7 +29,7 @@ struct TransactionsView: View {
                     }) {
                         Image(systemName: "folder.badge.plus")
                     }
-                    .padding(8)
+                    .padding(.trailing)
                     Button(action: {
                         viewModel.isShowingAddTransaction = true
                     }) {

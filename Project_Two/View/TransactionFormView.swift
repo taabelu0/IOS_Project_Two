@@ -40,32 +40,8 @@ struct TransactionFormView: View {
                 .cornerRadius(8)
             }
             .padding(.horizontal)
-            .sheet(isPresented: .constant(viewModel.showCategoryPicker == true && viewModel.selectedCategory == nil)) {
-                VStack {
-                    Text("Select a Category")
-                        .font(.headline)
-                        .padding()
-
-                    List {
-                        ForEach(viewModel.parentCategories.keys.sorted(), id: \.self) { parent in
-                            Section(header: Text(parent).foregroundColor(viewModel.parentCategories[parent])) {
-                                ForEach(viewModel.categories.filter { $0.parentCategory == parent }) { category in
-                                    Button(action: {
-                                        viewModel.selectedCategory = category
-                                    }) {
-                                        HStack {
-                                            Image(systemName: category.symbol)
-                                                .foregroundColor(category.color)
-                                            Text(category.name)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(20)
+            .sheet(isPresented: $viewModel.showCategoryPicker) {
+                            CategorySelectionView(viewModel: viewModel, allowAllCategories: false) 
             }
 
             Button(action: {
