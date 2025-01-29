@@ -8,7 +8,6 @@ import SwiftUI
 
 struct TransactionsView: View {
     @ObservedObject var viewModel: TransactionsViewModel
-    @State private var isFilterSheetPresented: Bool = false // Für das Filter-Modal
 
     var body: some View {
         NavigationView {
@@ -16,7 +15,7 @@ struct TransactionsView: View {
                 HStack {
                     // Filter-Icon am linken Rand
                     Button(action: {
-                        isFilterSheetPresented = true
+                        viewModel.isFilterSheetPresented = true
                     }) {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                             .font(.title2)
@@ -41,7 +40,7 @@ struct TransactionsView: View {
                 List(viewModel.filteredTransactions) { transaction in
                     HStack {
                         Image(systemName: transaction.category.symbol)
-                            .foregroundColor(transaction.category.color.opacity(0.3))
+                            .foregroundColor(transaction.category.color)
                         Text(transaction.name)
                         Spacer()
                         Text(String(format: "$%.2f", transaction.amount))
@@ -64,7 +63,7 @@ struct TransactionsView: View {
                                  })
             }
             // Filter Sheet
-            .sheet(isPresented: $isFilterSheetPresented) {
+            .sheet(isPresented: $viewModel.isFilterSheetPresented) {
                 FilterView(viewModel: viewModel)
             }
         }

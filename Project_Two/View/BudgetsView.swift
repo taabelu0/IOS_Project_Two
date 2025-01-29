@@ -5,56 +5,84 @@
 //  Created by Luca Bertonazzi on 25.01.2025.
 //
 import SwiftUI
+import Charts
 
 struct BudgetsView: View {
     @ObservedObject var viewModel: TransactionsViewModel
-    @State private var isFilterSheetPresented: Bool = false
-    @State private var isAddingBudget: Bool = false
 
     var body: some View {
         NavigationView {
             VStack {
+                // **Filter-Button und Plus-Button**
                 HStack {
-                    // Filter-Icon am linken Rand
                     Button(action: {
-                        isFilterSheetPresented = true
+                        viewModel.isFilterSheetPresented = true
                     }) {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                             .font(.title2)
                     }
                     .padding(.leading)
-                    Spacer(minLength: 1)
-                    // Plus rechts in der Toolbar
+
+                    Spacer()
+                    Text("Budgets for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
+                                            .font(.headline)
+                    Spacer()
                     Button(action: {
-                        isAddingBudget = true
+                        viewModel.isShowingAddTransaction = true
                     }) {
                         Image(systemName: "plus")
                     }
                     .padding(.trailing)
                 }
+                // **Pie Chart**
                 BudgetPieChartView(viewModel: viewModel)
 
-                // Budget-Liste
                 List {
-                    ForEach(viewModel.budgets) { budget in
-                        VStack(alignment: .leading) {
-                            Text(budget.name)
-                                .font(.headline)
-                            Text("Category: \(budget.category.name)")
-                                .foregroundColor(.secondary)
-                            Text(String(format: "$%.2f", budget.amount))
-                                .foregroundColor(.secondary)
+                    let filteredBudgets = viewModel.budgets.filter { budget in
+                        viewModel.selectedFilter == "All" ||
+                        budget.category.parentCategory == viewModel.selectedFilter ||
+                        budget.category.name == viewModel.selectedFilter
+                    }
+                    if filteredBudgets.isEmpty {
+                        Text("No Budgets Available")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    } else {
+                        ForEach(filteredBudgets) { budget in
+                            VStack(alignment: .leading) {
+                                Text(budget.name)
+                                    .font(.headline)
+                                Text("Category: \(budget.category.name)")
+                                    .foregroundColor(.secondary)
+                                Text(String(format: "$%.2f", budget.amount))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
                 }
             }
             .navigationTitle("Budgets")
-            .sheet(isPresented: $isFilterSheetPresented) {
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Total: ")
+                        .font(.headline)
+                        .foregroundColor(viewModel.totalSpent() > viewModel.totalBudget() ? .red : .primary)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Text(String(format: "$%.2f", viewModel.totalBudget() - viewModel.totalSpent()))
+                        .font(.headline)
+                        .foregroundColor(viewModel.totalSpent() > viewModel.totalBudget() ? .red : .primary)
+                }
+            }
+            .sheet(isPresented: $viewModel.isFilterSheetPresented) {
                 FilterView(viewModel: viewModel)
             }
-            .sheet(isPresented: $isAddingBudget) {
-                BudgetFormView(viewModel: viewModel, isPresented: $isAddingBudget)
-            }
+            .sheet(isPresented: $viewModel.isAddingBudget) {
+                BudgetFormView(viewModel: viewModel, onSave: {
+                    viewModel.addBudget()
+                    viewModel.isAddingBudget = false
+                    })            }
         }
     }
 }
+

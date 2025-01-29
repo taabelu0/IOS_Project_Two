@@ -12,30 +12,51 @@ struct BudgetPieChartView: View {
 
     var body: some View {
         VStack {
-            Text(viewModel.selectedFilter == "All" ? "Budget by Category" : "Budget by Subcategory")
+            Text("Budget by \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
                 .font(.headline)
 
-            ZStack {
-                Chart {
-                    let data = viewModel.selectedFilter == "All"
-                        ? viewModel.budgetDataForParentCategories()
-                        : viewModel.budgetDataForSubcategories()
+            let data = viewModel.selectedFilter == "All"
+                ? viewModel.budgetDataForParentCategories()
+                : viewModel.budgetDataForSubcategories()
 
-                    ForEach(data, id: \.name) { item in
-                        SectorMark(
-                            angle: .value("Amount", item.amount),
-                            innerRadius: .ratio(0.5),
-                            outerRadius: .ratio(1.0)
-                        )
-                        .foregroundStyle(item.color)
+            let totalBudget = viewModel.totalBudget()
+            let totalSpent = viewModel.totalSpent()
+            let remainingBudget = totalBudget - totalSpent
+            let isOverBudget = totalSpent > totalBudget
+
+            if !data.isEmpty {
+                ZStack {
+                    Chart {
+                        ForEach(data, id: \.name) { item in
+                            SectorMark(
+                                angle: .value("Spent", item.amount),
+                                innerRadius: .ratio(0.7),
+                                outerRadius: .ratio(1.0)
+                            )
+                            .foregroundStyle(item.color) // **Jede Kategorie bekommt ihre eigene Farbe**
+                        }
+
+                        if remainingBudget > 0 {
+                            SectorMark(
+                                angle: .value("Remaining", remainingBudget),
+                                innerRadius: .ratio(0.7),
+                                outerRadius: .ratio(1.0)
+                            )
+                            .foregroundStyle(Color.gray.opacity(0.3))
+                        }
                     }
-                }
-                .frame(height: 250)
+                    .frame(height: 250)
 
-                // **KORREKTUR**: Verbleibender Betrag in der Mitte anzeigen
-                Text(String(format: "$%.2f", viewModel.totalBudgetRemaining()))
+                    Text(String(format: "$%.2f", remainingBudget))
+                        .font(.title)
+                        .bold()
+                        .foregroundColor(isOverBudget ? .red : .primary)
+                }
+            } else {
+                Text(String(format: "$%.2f", remainingBudget))
                     .font(.title)
                     .bold()
+                    .foregroundColor(.red)
             }
         }
         .padding()

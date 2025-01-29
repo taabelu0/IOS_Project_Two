@@ -7,63 +7,62 @@
 import SwiftUI
 
 struct BudgetFormView: View {
-    @ObservedObject var viewModel: TransactionsViewModel
-    @Binding var isPresented: Bool
-    @State private var budgetName: String = ""
-    @State private var budgetAmount: String = ""
+    @ObservedObject var viewModel: TransactionsViewModel // Zugriff auf das ViewModel
+    let onSave: () -> Void // Callback für das Speichern
 
     var body: some View {
-        NavigationView {
-            VStack {
-                TextField("Budget Name", text: $budgetName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+        VStack {
+            Text(viewModel.isEditingBudget ? "Edit Budget" : "Add New Budget")
+                .font(.headline)
+                .padding()
+                .foregroundColor(Color(UIColor.label))
 
-                TextField("Budget Amount", text: $budgetAmount)
-                    .keyboardType(.decimalPad)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+            TextField("Budget Name", text: $viewModel.newBudgetName)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
 
-                // Kategorieauswahl als Button
-                Button(action: {
-                    viewModel.showCategoryPicker = true
-                }) {
-                    HStack {
-                        Text(viewModel.selectedCategory?.name ?? "All Categories")
-                            .foregroundColor(viewModel.selectedCategory == nil ? .gray : .primary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                    }
-                    .padding()
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .cornerRadius(8)
+            TextField("Amount", text: $viewModel.newBudgetAmount)
+                .keyboardType(.decimalPad)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            // Kategorieauswahl als Button
+            Button(action: {
+                viewModel.showCategoryPicker = true
+            }) {
+                HStack {
+                    Text(viewModel.selectedCategory?.name ?? "Select Category")
+                    Spacer()
+                    Image(systemName: "chevron.right")
                 }
-                .padding(.horizontal)
-
-                Spacer()
-
-                // Speichern-Button
-                Button(action: {
-                    if let amount = Double(budgetAmount), !budgetName.isEmpty {
-                        viewModel.addBudget(name: budgetName, amount: amount, category: viewModel.selectedCategory)
-                        isPresented = false
-                    }
-                }) {
-                    Text("Save Budget")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(budgetName.isEmpty || budgetAmount.isEmpty ? Color.gray : Color.blue)
-                        .cornerRadius(10)
-                        .padding()
-                }
-                .disabled(budgetName.isEmpty || budgetAmount.isEmpty)
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(8)
             }
-            .navigationTitle("Add Budget")
+            .padding(.horizontal)
             .sheet(isPresented: $viewModel.showCategoryPicker) {
-                CategorySelectionView(viewModel: viewModel, allowAllCategories: true) // "All Categories" wird angezeigt
+                CategorySelectionView(viewModel: viewModel, allowAllCategories: true)
             }
+
+            // Speichern-Button
+            Button(action: {
+                onSave()
+            }) {
+                Text("Save Budget")
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(viewModel.newBudgetName.isEmpty || viewModel.newBudgetAmount.isEmpty || viewModel.selectedCategory == nil ? Color(UIColor.tertiarySystemBackground) : Color.blue)
+                    .foregroundColor(viewModel.newBudgetName.isEmpty || viewModel.newBudgetAmount.isEmpty || viewModel.selectedCategory == nil ? Color(UIColor.systemGray) : Color.white)
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+            }
+            .disabled(viewModel.newBudgetName.isEmpty || viewModel.newBudgetAmount.isEmpty || viewModel.selectedCategory == nil)
+
+            Spacer()
         }
+        .padding()
+        .presentationDetents([.fraction(0.5)])
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(20)
     }
 }
