@@ -24,7 +24,7 @@ struct BudgetPieChartView: View {
             let remainingBudget = totalBudget - totalSpent
             let isOverBudget = totalSpent > totalBudget
 
-            if !data.isEmpty {
+            if !data.isEmpty && totalBudget > 0 {
                 ZStack {
                     Chart {
                         ForEach(data, id: \.name) { item in
@@ -53,12 +53,14 @@ struct BudgetPieChartView: View {
                         .foregroundColor(isOverBudget ? .red : .primary)
                 }
             } else {
+                // Falls kein Budget vorhanden ist, nur Zahl anzeigen
                 Text(String(format: "$%.2f", remainingBudget))
                     .font(.title)
                     .bold()
-                    .foregroundColor(.red)
+                    .foregroundColor(isOverBudget ? .red : .primary)
             }
         }
         .padding()
     }
 }
+
