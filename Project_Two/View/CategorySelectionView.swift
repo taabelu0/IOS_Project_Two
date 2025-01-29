@@ -8,7 +8,7 @@ import SwiftUI
 
 struct CategorySelectionView: View {
     @ObservedObject var viewModel: TransactionsViewModel
-    var allowAllCategories: Bool // Steuerung, ob "All Categories" angezeigt wird
+    var allowAllCategories: Bool
 
     var body: some View {
         VStack {
@@ -17,7 +17,6 @@ struct CategorySelectionView: View {
                 .padding()
 
             List {
-                // Falls die View "All Categories" erlauben soll (nur für Budgets)
                 if allowAllCategories {
                     Button(action: {
                         viewModel.selectedCategory = nil
@@ -31,18 +30,21 @@ struct CategorySelectionView: View {
                     }
                 }
 
-                // Kategorien nach Überkategorien gruppieren
-                ForEach(viewModel.parentCategories.keys.sorted(), id: \.self) { parent in
-                    Section(header: Text(parent).foregroundColor(viewModel.parentCategories[parent])) {
-                        ForEach(viewModel.categories.filter { $0.parentCategory == parent }) { category in
-                            Button(action: {
-                                viewModel.selectedCategory = category
-                                viewModel.showCategoryPicker = false
-                            }) {
+                ForEach(Array(viewModel.parentCategories.keys).sorted(), id: \.self) { parent in
+                    let filteredCategories = viewModel.categories.filter { $0.parentCategory == parent }
+
+                    if !filteredCategories.isEmpty {
+                        Section(header: Text(parent).foregroundColor(viewModel.parentCategories[parent])) {
+                            ForEach(filteredCategories, id: \.id) { category in
                                 HStack {
                                     Image(systemName: category.symbol)
                                         .foregroundColor(category.color)
                                     Text(category.name)
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    viewModel.selectedCategory = category
+                                    viewModel.showCategoryPicker = false
                                 }
                             }
                         }

@@ -7,7 +7,8 @@
 import SwiftUI
 
 struct BudgetFormView: View {
-    @ObservedObject var viewModel: TransactionsViewModel // Zugriff auf das ViewModel
+    @ObservedObject var viewModel: TransactionsViewModel
+    @Environment(\.presentationMode) var presentationMode // Erlaubt das Schließen des Formulars
     let onSave: () -> Void // Callback für das Speichern
 
     var body: some View {
@@ -46,7 +47,12 @@ struct BudgetFormView: View {
 
             // Speichern-Button
             Button(action: {
-                onSave()
+                if viewModel.isEditingBudget {
+                    viewModel.updateBudget()
+                } else {
+                    viewModel.addBudget()
+                }
+                presentationMode.wrappedValue.dismiss()
             }) {
                 Text("Save Budget")
                     .padding()

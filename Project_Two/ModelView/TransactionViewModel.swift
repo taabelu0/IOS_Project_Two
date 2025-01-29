@@ -9,16 +9,16 @@ import SwiftUI
 class TransactionsViewModel: ObservableObject {
     // Transactions and categories
     @Published var parentCategories: [String: Color] = [
-            "Essentials": Color(hue: 0.1, saturation: 1.0, brightness: 1.0), // Orange
-            "Housing": Color(hue: 0.6, saturation: 1.0, brightness: 1.0), // Blau
-            "Transportation": Color(hue: 0.3, saturation: 1.0, brightness: 1.0), // Grün
-            "Entertainment": Color(hue: 0.0, saturation: 1.0, brightness: 1.0), // Rot
-            "Health": Color(hue: 0.75, saturation: 1.0, brightness: 1.0), // Violett
-            "Utilities": Color(hue: 0.16, saturation: 1.0, brightness: 1.0), // Gelb
-            "Shopping": Color(hue: 0.5, saturation: 1.0, brightness: 1.0), // Türkisblau
-            "Food & Drinks": Color(hue: 0.08, saturation: 1.0, brightness: 1.0), // Braun
-            "Leisure": Color(hue: 0.58, saturation: 1.0, brightness: 1.0), // Dunkelblau
-            "Home & Garden": Color(hue: 0.4, saturation: 1.0, brightness: 1.0) // Waldgrün
+        "Essentials": Color(hue: 0.75, saturation: 1.0, brightness: 1.0), // Violett
+        "Housing": Color(hue: 0.1, saturation: 1.0, brightness: 1.0), // Orange
+        "Transportation": Color(hue: 0.3, saturation: 1.0, brightness: 0.8), // Grün
+        "Entertainment": Color(hue: 0.0, saturation: 1.0, brightness: 0.8), // Rot
+        "Health": Color(hue: 0.16, saturation: 1.0, brightness: 0.9), // Gelb
+        "Utilities": Color(hue: 0.6, saturation: 1.0, brightness: 0.9), // Blau
+        "Shopping": Color(hue: 0.5, saturation: 1.0, brightness: 0.9), // Türkisblau
+        "Food & Drinks": Color(hue: 0.08, saturation: 1.0, brightness: 1.0), // Braun
+        "Leisure": Color(hue: 0.58, saturation: 1.0, brightness: 1.0), // Dunkelblau
+        "Home & Garden": Color(hue: 0.4, saturation: 1.0, brightness: 0.8) // Waldgrün
         ]
         
     @Published var categories: [Category] = []
@@ -58,7 +58,13 @@ class TransactionsViewModel: ObservableObject {
                 // 🛍 **Shopping**
                 Category(symbol: "laptopcomputer", name: "Electronics", color: parentCategories["Shopping"]!, parentCategory: "Shopping"),
                 Category(symbol: "bag.fill", name: "Clothing", color: parentCategories["Shopping"]!, parentCategory: "Shopping"),
-                Category(symbol: "watch.fill", name: "Accessories", color: parentCategories["Shopping"]!, parentCategory: "Shopping")
+                Category(symbol: "watch.fill", name: "Accessories", color: parentCategories["Shopping"]!, parentCategory: "Shopping"),
+                
+                // **Home & Garden**
+                Category(symbol: "plant", name: "Plants", color: parentCategories["Home & Garden"]!, parentCategory: "Home & Garden"),
+                
+                // **Food & Drinks**
+                Category(symbol: "cafe", name: "Cafe", color: parentCategories["Food & Drinks"]!, parentCategory: "Food & Drinks")
             ]
             
             transactions = [
@@ -104,27 +110,32 @@ class TransactionsViewModel: ObservableObject {
         ]
     // Form state for creating or editing a transaction
     @Published var isEditingTransaction: Bool = false
+    @Published var editingTransaction: Transaction? = nil
     @Published var newTransactionName: String = ""
     @Published var newTransactionAmount: String = ""
     @Published var selectedCategory: Category? = nil
     @Published var showCategoryPicker: Bool = false
+    @Published var isShowingTransactionForm: Bool = false
 
     // State for category creation
-    @Published var isShowingAddTransaction: Bool = false
     @Published var isShowingAddCategory: Bool = false
     @Published var newCategoryName: String = ""
     @Published var selectedParentCategory: String? = nil
     
-    // State for filter
-    @Published var selectedFilter: String = "All"
-    @Published var isFilterSheetPresented: Bool = false
-    
-    // State for Budget creation
+    // State for Budget creation or editing
     @Published var isAddingBudget: Bool = false
     @Published var isEditingBudget: Bool = false
     @Published var newBudgetName: String = ""
     @Published var newBudgetAmount: String = ""
+    @Published var editingBudget: Budget? = nil
+    
+    // State for filter
+    @Published var selectedFilter: String = "All"
+    @Published var isFilterSheetPresented: Bool = false
 
+
+/*-----------------------------------------------------Filters----------------------------------------------------------*/
+    
     // Filter logic transactions
     var filteredTransactions: [Transaction] {
         if selectedFilter == "All" {
@@ -166,8 +177,20 @@ class TransactionsViewModel: ObservableObject {
             return categories.filter { $0.name == selectedFilter }
         }
     }
+    
+    // filter for budgets
+    var filteredBudgets: [Budget] {
+        if selectedFilter == "All" {
+            return budgets
+        } else {
+            return budgets.filter { $0.category.parentCategory == selectedFilter || $0.category.name == selectedFilter }
+        }
+    }
 
+    
+/*-----------------------------------------------------Transaction logic----------------------------------------------------------*/
 
+    
     // Add a new transaction
     func addTransaction() {
         guard let amount = Double(newTransactionAmount), let category = selectedCategory else { return }
@@ -175,18 +198,50 @@ class TransactionsViewModel: ObservableObject {
         transactions.append(transaction)
         resetTransactionForm()
     }
-
+    
     // Update an existing transaction
-    func updateTransaction(transaction: Transaction) {
-        guard let index = transactions.firstIndex(where: { $0.id == transaction.id }),
+    func updateTransaction() {
+        guard let editingTransaction = editingTransaction,
+              let index = transactions.firstIndex(where: { $0.id == editingTransaction.id }),
               let amount = Double(newTransactionAmount),
-              let category = selectedCategory else { return }
-        
+              let category = selectedCategory else {
+            return
+        }
+
         transactions[index].name = newTransactionName
         transactions[index].amount = amount
         transactions[index].category = category
+
         resetTransactionForm()
     }
+
+    // Load an existing transaction
+    func startEditingTransaction(_ transaction: Transaction) {
+        isShowingTransactionForm = true
+        isEditingTransaction = true
+        editingTransaction = transaction
+        newTransactionName = transaction.name
+        newTransactionAmount = String(format: "%.2f", transaction.amount) // 🔹 Format fix
+        selectedCategory = transaction.category
+    }
+    
+    func deleteTransaction(at offsets: IndexSet) {
+        transactions.remove(atOffsets: offsets)
+    }
+
+    // Reset the transaction form state
+    func resetTransactionForm() {
+        isEditingTransaction = false
+        editingTransaction = nil
+        newTransactionName = ""
+        newTransactionAmount = ""
+        selectedCategory = nil
+        showCategoryPicker = false
+        editingBudget = nil
+    }
+    
+
+/*-----------------------------------------------------Category logic----------------------------------------------------------*/
 
     // Add a new category
     func addCategory() {
@@ -199,7 +254,14 @@ class TransactionsViewModel: ObservableObject {
             resetCategoryForm()
         }
 
+    // Reset the category form state
+    func resetCategoryForm() {
+        newCategoryName = ""
+        selectedParentCategory = nil
+    }
+    
 
+/*-----------------------------------------------------Budget logic----------------------------------------------------------*/
     
     // Add new Budget
     func addBudget() {
@@ -208,22 +270,33 @@ class TransactionsViewModel: ObservableObject {
             budgets.append(budget)
             resetBudgetForm()
     }
-
-    // Reset the transaction form state
-    func resetTransactionForm() {
-        isEditingTransaction = false
-        newTransactionName = ""
-        newTransactionAmount = ""
-        selectedCategory = nil
-        showCategoryPicker = false
-    }
-
-    // Reset the category form state
-    func resetCategoryForm() {
-        newCategoryName = ""
-        selectedParentCategory = nil
+    
+    func startEditingBudget(_ budget: Budget) {
+        editingBudget = budget
+        isEditingBudget = true
+        newBudgetName = budget.name
+        newBudgetAmount = String(budget.amount)
+        selectedCategory = budget.category
+        isAddingBudget = true 
     }
     
+    func updateBudget() {
+        guard let editingBudget = editingBudget,
+              let index = budgets.firstIndex(where: { $0.id == editingBudget.id }),
+              let amount = Double(newBudgetAmount),
+              let category = selectedCategory else { return }
+
+        budgets[index].name = newBudgetName
+        budgets[index].amount = amount
+        budgets[index].category = category
+
+        resetBudgetForm() // Reset state nach dem Speichern
+    }
+    
+    func deleteBudget(at offsets: IndexSet) {
+        budgets.remove(atOffsets: offsets)
+    }
+
     // Reset Budget form
     func resetBudgetForm() {
             isEditingBudget = false
@@ -233,6 +306,9 @@ class TransactionsViewModel: ObservableObject {
             showCategoryPicker = false
         }
     
+
+/*-----------------------------------------------------Calculate functions----------------------------------------------------------*/
+
     // Parent Category total
     func totalForParentCategory(_ parent: String) -> Double {
         let filteredCategories = categories.filter { $0.parentCategory == parent }
@@ -262,13 +338,12 @@ class TransactionsViewModel: ObservableObject {
         }
     }
 
-    
     // Gesamtbudget Total
     func overallTotalBudget() -> Double {
-        return budgets.reduce(0) { $0 + $1.amount }
+        return budgets.reduce(0) { $0 + $1.amount } - transactions.reduce(0){ $0 + $1.amount }
     }
 
-    // **Gesamtausgaben basierend auf Filter**
+    // Gesamtausgaben basierend auf Filter
     func totalSpent() -> Double {
         if selectedFilter == "All" {
             return transactions.reduce(0) { $0 + $1.amount }
@@ -280,8 +355,10 @@ class TransactionsViewModel: ObservableObject {
         }
     }
 
+    
+/*-----------------------------------------------------PieChart functions----------------------------------------------------------*/
+
     func budgetDataForParentCategories() -> [BudgetChartData] {
-        // 🟢 **Falls "All" gewählt ist, zeigen wir ALLE Überkategorien**
         if selectedFilter == "All" {
             let data = parentCategories.map { (parent, color) -> BudgetChartData in
                 let totalSpent = transactions
@@ -294,23 +371,16 @@ class TransactionsViewModel: ObservableObject {
 
                 return BudgetChartData(name: parent, amount: totalSpent, color: color)
             }
-
-            print("📊 Budget Chart Data (All Categories): \(data)")
             return data
         }
 
-        // 🟢 **Normale Berechnung für eine spezifische Überkategorie**
         guard parentCategories.keys.contains(selectedFilter) else { return [] }
 
         let relevantCategories = categories.filter { $0.parentCategory == selectedFilter }
 
-        print("🔍 Überkategorie: \(selectedFilter), Gefundene Unterkategorien: \(relevantCategories.map { $0.name })")
-
         let relevantBudgets = budgets.filter { budget in
             relevantCategories.contains(where: { $0.name == budget.category.name })
         }
-
-        print("🛠 Gefilterte Budgets für \(selectedFilter): \(relevantBudgets.map { $0.category.name })")
 
         let data = relevantBudgets.map { budget in
             let spent = transactions
@@ -322,13 +392,11 @@ class TransactionsViewModel: ObservableObject {
             return BudgetChartData(name: budget.category.name, amount: spent, color: categoryColor)
         }
 
-        print("📊 Budget Chart Data (Fixed - Parent): \(data)")
         return data
     }
 
 
     func budgetDataForSubcategories() -> [BudgetChartData] {
-        // Prüfe, ob der Filter eine gültige Überkategorie oder einzelne Kategorie ist
         guard parentCategories.keys.contains(selectedFilter) || categories.contains(where: { $0.name == selectedFilter }) else {
             return []
         }
@@ -338,7 +406,7 @@ class TransactionsViewModel: ObservableObject {
             let spent = transactions.filter { $0.category.name == selectedFilter }.reduce(0) { $0 + $1.amount }
             let budget = budgets.first(where: { $0.category.name == selectedFilter })?.amount ?? 0
 
-            guard budget > 0 else { return [] } // ✅ **Kein Budget → Kein Pie-Chart**
+            guard budget > 0 else { return [] } 
 
             let categoryColor = categories.first(where: { $0.name == selectedFilter })?.color ?? .gray
             return [BudgetChartData(name: selectedFilter, amount: spent, color: categoryColor)]
@@ -355,15 +423,14 @@ class TransactionsViewModel: ObservableObject {
 
         let data: [BudgetChartData] = relevantCategories.enumerated().compactMap { (index, category) in
             let spent = transactions.filter { $0.category.name == category.name }.reduce(0) { $0 + $1.amount }
-            guard spent > 0 else { return nil } // ✅ **Keine Ausgaben → Nicht anzeigen**
+            guard spent > 0 else { return nil }
 
             let categoryColor = category.color
-            let hue = categoryColor.getHSBComponents()?.hue ?? 0.5 // Falls fehlschlägt, Standard-Hue
+            let hue = categoryColor.getHSBComponents()?.hue ?? 0.5
             let adjustedColor = Color(hue: hue, saturation: 0.1 + (Double(index) / Double(totalSubcategories)) * 0.8, brightness: 1.0)
 
             return BudgetChartData(name: category.name, amount: spent, color: adjustedColor)
-        }.compactMap { $0 } // **Filtert `nil` Werte heraus**
-
+        }.compactMap { $0 }
         return data
     }
 

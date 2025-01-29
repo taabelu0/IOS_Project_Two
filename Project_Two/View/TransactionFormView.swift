@@ -4,11 +4,13 @@
 //
 //  Created by Marco Worni on 28.01.2025.
 //
+
 import SwiftUI
 
 struct TransactionFormView: View {
-    @ObservedObject var viewModel: TransactionsViewModel // Zugriff auf das ViewModel
-
+    @ObservedObject var viewModel: TransactionsViewModel
+    @Environment(\.presentationMode) var presentationMode // Ermöglicht das Schließen des Formulars
+    
     let onSave: () -> Void // Callback für das Speichern
 
     var body: some View {
@@ -41,11 +43,16 @@ struct TransactionFormView: View {
             }
             .padding(.horizontal)
             .sheet(isPresented: $viewModel.showCategoryPicker) {
-                            CategorySelectionView(viewModel: viewModel, allowAllCategories: false) 
+                CategorySelectionView(viewModel: viewModel, allowAllCategories: false)
             }
 
             Button(action: {
-                onSave()
+                if viewModel.isEditingTransaction {
+                    viewModel.updateTransaction() // Falls Bearbeitung, Update ausführen
+                } else {
+                    viewModel.addTransaction() // Falls neu, hinzufügen
+                }
+                presentationMode.wrappedValue.dismiss() // Formular schließen
             }) {
                 Text("Save")
                     .padding()

@@ -12,8 +12,6 @@ struct BudgetPieChartView: View {
 
     var body: some View {
         VStack {
-            Text("Budget by \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
-                .font(.headline)
 
             let data = viewModel.selectedFilter == "All"
                 ? viewModel.budgetDataForParentCategories()

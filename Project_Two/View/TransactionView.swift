@@ -1,9 +1,10 @@
 //
-//  TransactionView.swift
+//  TransactionsView.swift
 //  Project_Two
 //
 //  Created by Marco Worni on 28.01.2025.
 //
+
 import SwiftUI
 
 struct TransactionsView: View {
@@ -21,7 +22,9 @@ struct TransactionsView: View {
                             .font(.title2)
                     }
                     .padding(.leading)
+
                     Spacer(minLength: 1)
+
                     // Buttons rechts in der Toolbar
                     Button(action: {
                         viewModel.isShowingAddCategory = true
@@ -29,41 +32,82 @@ struct TransactionsView: View {
                         Image(systemName: "folder.badge.plus")
                     }
                     .padding(.trailing)
+
                     Button(action: {
-                        viewModel.isShowingAddTransaction = true
+                        viewModel.isShowingTransactionForm = true
+                        viewModel.isEditingTransaction = false // Neue Transaktion, keine Bearbeitung
+                        viewModel.resetTransactionForm()
                     }) {
                         Image(systemName: "plus")
                     }
                     .padding(.trailing)
                 }
+                .padding(.top)
+
                 // Gefilterte Liste anzeigen
-                List(viewModel.filteredTransactions) { transaction in
-                    HStack {
-                        Image(systemName: transaction.category.symbol)
-                            .foregroundColor(transaction.category.color)
-                        Text(transaction.name)
-                        Spacer()
-                        Text(String(format: "$%.2f", transaction.amount))
+                List {
+                    ForEach(viewModel.filteredTransactions, id: \.id) { transaction in
+                        HStack(alignment: .top) {
+                            Image(systemName: transaction.category.symbol)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(transaction.category.color)
+
+                            VStack(alignment: .leading) {
+                                Text(transaction.name)
+                                    .font(.headline)
+                                Text(transaction.category.name)
+                                    .font(.subheadline)
+                                    .foregroundColor(transaction.category.color)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 8)
+                            
+                            Spacer()
+
+                            Text(String(format: "$%.2f", transaction.amount))
+                                .foregroundColor(transaction.amount < 0 ? .red : .primary)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            viewModel.startEditingTransaction(transaction)
+                        }
+                    }
+                    .onDelete { indexSet in
+                        viewModel.deleteTransaction(at: indexSet)
                     }
                 }
             }
             .navigationTitle("Transactions")
-            .sheet(isPresented: $viewModel.isShowingAddTransaction) {
+            .sheet(isPresented: $viewModel.isShowingTransactionForm, onDismiss: {
+                viewModel.isShowingAddCategory = false
+                viewModel.isFilterSheetPresented = false
+            }) {
                 TransactionFormView(viewModel: viewModel,
                                     onSave: {
-                                        viewModel.addTransaction()
-                                        viewModel.isShowingAddTransaction = false
+                                        if viewModel.isEditingTransaction {
+                                            viewModel.updateTransaction()
+                                        } else {
+                                            viewModel.addTransaction()
+                                        }
+                                        viewModel.isShowingTransactionForm = false
                                     })
             }
-            .sheet(isPresented: $viewModel.isShowingAddCategory) {
+            .sheet(isPresented: $viewModel.isShowingAddCategory, onDismiss: {
+                viewModel.isShowingTransactionForm = false
+                viewModel.isFilterSheetPresented = false
+            }) {
                 CategoryFormView(viewModel: viewModel,
                                  onSave: {
                                      viewModel.addCategory()
                                      viewModel.isShowingAddCategory = false
                                  })
             }
-            // Filter Sheet
-            .sheet(isPresented: $viewModel.isFilterSheetPresented) {
+            .sheet(isPresented: $viewModel.isFilterSheetPresented, onDismiss: {
+                viewModel.isShowingTransactionForm = false
+                viewModel.isShowingAddCategory = false
+            }) {
                 FilterView(viewModel: viewModel)
             }
         }
