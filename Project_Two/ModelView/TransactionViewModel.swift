@@ -32,6 +32,22 @@ class TransactionsViewModel: ObservableObject {
     @Published var isShowingAddCategory: Bool = false
     @Published var newCategoryName: String = ""
     @Published var selectedParentCategory: String? = nil
+    
+    // Zustand für den Filter
+    @Published var selectedFilter: String = "All"
+
+    // Filterlogik
+    var filteredTransactions: [Transaction] {
+        if selectedFilter == "All" {
+            return transactions
+        } else if parentCategories.keys.contains(selectedFilter) {
+            // Filter nach Überkategorie
+            return transactions.filter { $0.category.parentCategory == selectedFilter }
+        } else {
+            // Filter nach spezifischer Kategorie
+            return transactions.filter { $0.category.name == selectedFilter }
+        }
+    }
 
     // Add a new transaction
     func addTransaction() {

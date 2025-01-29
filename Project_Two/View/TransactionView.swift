@@ -8,56 +8,65 @@ import SwiftUI
 
 struct TransactionsView: View {
     @StateObject private var viewModel = TransactionsViewModel()
+    @State private var isFilterSheetPresented: Bool = false // Für das Filter-Modal
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(viewModel.transactions) { transaction in
+            VStack {
+                HStack {
+                    // Filter-Icon am linken Rand
+                    Button(action: {
+                        isFilterSheetPresented = true
+                    }) {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .font(.title2)
+                    }
+                    .padding(.leading)
+                    Spacer(minLength: 1)
+                    // Buttons rechts in der Toolbar
+                    Button(action: {
+                        viewModel.isShowingAddCategory = true
+                    }) {
+                        Image(systemName: "folder.badge.plus")
+                    }
+                    .padding(8)
+                    Button(action: {
+                        viewModel.isShowingAddTransaction = true
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                    .padding(.trailing)
+                }
+                // Gefilterte Liste anzeigen
+                List(viewModel.filteredTransactions) { transaction in
                     HStack {
+                        Image(systemName: transaction.category.symbol)
+                            .foregroundColor(transaction.category.color.opacity(0.3))
                         Text(transaction.name)
-                            .padding()
-                            .background(transaction.category.color.opacity(0.3))
-                            .cornerRadius(8)
                         Spacer()
                         Text(String(format: "$%.2f", transaction.amount))
                     }
                 }
             }
             .navigationTitle("Transactions")
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button("Add category",
-                           systemImage: "folder.badge.plus",
-                           action: {
-                                viewModel.isShowingAddCategory = true
-                        }
-                    )
-                    .labelStyle(.iconOnly)
-                    
-                    Button("Add transaction",
-                           systemImage: "plus",
-                           action: {
-                        viewModel.isShowingAddTransaction = true
-                        }
-                    )
-                    .labelStyle(.iconOnly)
-                }
-            }
             .sheet(isPresented: $viewModel.isShowingAddTransaction) {
                 TransactionFormView(viewModel: viewModel,
-                    onSave: {
-                        viewModel.addTransaction()
-                        viewModel.isShowingAddTransaction = false
-                    })
+                                    onSave: {
+                                        viewModel.addTransaction()
+                                        viewModel.isShowingAddTransaction = false
+                                    })
             }
             .sheet(isPresented: $viewModel.isShowingAddCategory) {
                 CategoryFormView(viewModel: viewModel,
-                    onSave: {
-                    viewModel.addCategory()
-                    viewModel.isShowingAddCategory = false
-                })
+                                 onSave: {
+                                     viewModel.addCategory()
+                                     viewModel.isShowingAddCategory = false
+                                 })
+            }
+            // Filter Sheet
+            .sheet(isPresented: $isFilterSheetPresented) {
+                FilterView(viewModel: viewModel)
             }
         }
     }
 }
-
