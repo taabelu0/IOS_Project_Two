@@ -42,7 +42,7 @@ struct LoginView: View {
 }
 
 struct ContentView: View {
-    @StateObject private var viewModel = TransactionsViewModel() // Shared ViewModel
+    @StateObject private var viewModel = DataInitializer().loadTransactionViewModelWithSampleData(transactionViewModel: TransactionsViewModel()) // Shared ViewModel
 
     var body: some View {
         if viewModel.isLoggedIn {

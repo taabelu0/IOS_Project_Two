@@ -6,7 +6,8 @@
 //
 import SwiftUI
 
-struct BudgetChartData {
+struct BudgetChartData: Identifiable {
+    var id = UUID()
     var name: String
     var amount: Double
     var color: Color
