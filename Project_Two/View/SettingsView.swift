@@ -13,13 +13,13 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
+                // Has to be updated when Login is implemented
                 Section(header: Text("Profile")) {
                     Text("Name: test")
                     Text("Email: test@test.com")
                 }
                 
                 Section(header: Text("Preferences")) {
-                    Toggle("Notifications Enabled", isOn: .constant(false))
                     Toggle("Dark Mode", isOn: $viewModel.isDarkMode)
                 }
                 
