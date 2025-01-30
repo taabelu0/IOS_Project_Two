@@ -47,7 +47,7 @@ struct ContentView: View {
     var body: some View {
         if viewModel.isLoggedIn {
             TabView {
-                DashboardView()
+                DashboardView(viewModel: viewModel)
                     .tabItem {
                         Label("Dashboard", systemImage: "house.fill")
                     }

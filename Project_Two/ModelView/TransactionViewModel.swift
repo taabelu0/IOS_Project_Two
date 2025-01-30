@@ -366,7 +366,12 @@ class TransactionsViewModel: ObservableObject {
                 .reduce(0, +) // ✅ Fix: Transaktionslose Kategorien vermeiden
         }
     }
-
+    
+    
+    // Gesamtbudget ohne Abzüge
+    func overallBudgetLimit() -> Double {
+        budgets.reduce(0) {$0 + $1.amount}
+    }
     
 /*-----------------------------------------------------PieChart functions----------------------------------------------------------*/
 
