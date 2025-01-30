@@ -7,6 +7,7 @@
 import SwiftUI
 
 class TransactionsViewModel: ObservableObject {
+    
     // Transactions and categories
     @Published var parentCategories: [String: Color] = [
         "Essentials": Color(hue: 0.75, saturation: 1.0, brightness: 1.0), // Violett
@@ -23,7 +24,9 @@ class TransactionsViewModel: ObservableObject {
         
     @Published var categories: [Category] = []
     @Published var transactions: [Transaction] = []
+    @Published var budgets: [Budget] = []
         
+    // Example Data
         init() {
             categories = [
                 // 🏠 **Essentials**
@@ -45,6 +48,9 @@ class TransactionsViewModel: ObservableObject {
                 Category(symbol: "fork.knife", name: "Dining Out", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment"),
                 Category(symbol: "tv", name: "Streaming", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment"),
                 Category(symbol: "gamecontroller", name: "Gaming", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment"),
+                Category(symbol: "film", name: "Movies", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment"),
+                Category(symbol: "music.mic", name: "Concerts", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment"),
+
                 
                 // ⚕️ **Health**
                 Category(symbol: "heart.fill", name: "Medical Bills", color: parentCategories["Health"]!, parentCategory: "Health"),
@@ -61,10 +67,10 @@ class TransactionsViewModel: ObservableObject {
                 Category(symbol: "watch.fill", name: "Accessories", color: parentCategories["Shopping"]!, parentCategory: "Shopping"),
                 
                 // **Home & Garden**
-                Category(symbol: "plant", name: "Plants", color: parentCategories["Home & Garden"]!, parentCategory: "Home & Garden"),
+                Category(symbol: "leaf", name: "Plants", color: parentCategories["Home & Garden"]!, parentCategory: "Home & Garden"),
                 
                 // **Food & Drinks**
-                Category(symbol: "cafe", name: "Cafe", color: parentCategories["Food & Drinks"]!, parentCategory: "Food & Drinks")
+                Category(symbol: "cup.and.heat.waves", name: "Coffee", color: parentCategories["Food & Drinks"]!, parentCategory: "Food & Drinks")
             ]
             
             transactions = [
@@ -96,18 +102,21 @@ class TransactionsViewModel: ObservableObject {
                 Transaction(name: "Doctor Visit", category: Category(symbol: "stethoscope", name: "Medical Bills", color: parentCategories["Health"]!, parentCategory: "Health"), amount: 100.00),
                 Transaction(name: "Vitamins & Supplements", category: Category(symbol: "pill", name: "Health", color: parentCategories["Health"]!, parentCategory: "Health"), amount: 25.00),
             ]
+            
+            budgets = [
+                Budget(name: "Grocery Budget", amount: 500.00, category: Category(symbol: "cart", name: "Groceries", color: parentCategories["Essentials"]!, parentCategory: "Essentials")),
+                Budget(name: "Entertainment Budget", amount: 150.00, category: Category(symbol: "tv", name: "Streaming", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment")),
+                Budget(name: "Housing Costs", amount: 1800.00, category: Category(symbol: "house", name: "Rent", color: parentCategories["Housing"]!, parentCategory: "Housing")),
+                Budget(name: "Shopping Budget", amount: 300.00, category: Category(symbol: "bag.fill", name: "Clothing", color: parentCategories["Shopping"]!, parentCategory: "Shopping")),
+                Budget(name: "Utilities", amount: 200.00, category: Category(symbol: "bolt", name: "Electricity", color: parentCategories["Utilities"]!, parentCategory: "Utilities")),
+                Budget(name: "Dining Out", amount: 100.00, category: Category(symbol: "fork.knife", name: "Dining Out", color: parentCategories["Entertainment"]!, parentCategory: "Entertainment")),
+                
+            ]
         }
 
-        // 🟢 **Budgets für viele Kategorien**
-        @Published var budgets: [Budget] = [
-            Budget(name: "Grocery Budget", amount: 500.00, category: Category(symbol: "cart", name: "Groceries", color: .orange, parentCategory: "Essentials")),
-            Budget(name: "Entertainment Budget", amount: 150.00, category: Category(symbol: "tv", name: "Streaming", color: .pink, parentCategory: "Entertainment")),
-            Budget(name: "Housing Costs", amount: 1800.00, category: Category(symbol: "house", name: "Rent", color: .blue, parentCategory: "Housing")),
-            Budget(name: "Shopping Budget", amount: 300.00, category: Category(symbol: "bag.fill", name: "Clothing", color: .cyan, parentCategory: "Shopping")),
-            Budget(name: "Utilities", amount: 200.00, category: Category(symbol: "bolt", name: "Electricity", color: .yellow, parentCategory: "Utilities")),
-            Budget(name: "Dining Out", amount: 100.00, category: Category(symbol: "fork.knife", name: "Dining Out", color: .red, parentCategory: "Entertainment")),
-            Budget(name: "All Expenses", amount: 10000.00, category: Category(symbol: "cart", name: "All Expenses", color: .red, parentCategory: "All Expenses"))
-        ]
+    // sheets
+    @Published var activeSheet: ActiveSheet? = nil
+
     // Form state for creating or editing a transaction
     @Published var isEditingTransaction: Bool = false
     @Published var editingTransaction: Transaction? = nil
@@ -115,15 +124,12 @@ class TransactionsViewModel: ObservableObject {
     @Published var newTransactionAmount: String = ""
     @Published var selectedCategory: Category? = nil
     @Published var showCategoryPicker: Bool = false
-    @Published var isShowingTransactionForm: Bool = false
 
     // State for category creation
-    @Published var isShowingAddCategory: Bool = false
     @Published var newCategoryName: String = ""
     @Published var selectedParentCategory: String? = nil
     
     // State for Budget creation or editing
-    @Published var isAddingBudget: Bool = false
     @Published var isEditingBudget: Bool = false
     @Published var newBudgetName: String = ""
     @Published var newBudgetAmount: String = ""
@@ -217,7 +223,7 @@ class TransactionsViewModel: ObservableObject {
 
     // Load an existing transaction
     func startEditingTransaction(_ transaction: Transaction) {
-        isShowingTransactionForm = true
+        activeSheet = .transactionForm
         isEditingTransaction = true
         editingTransaction = transaction
         newTransactionName = transaction.name
@@ -265,10 +271,14 @@ class TransactionsViewModel: ObservableObject {
     
     // Add new Budget
     func addBudget() {
-            guard let amount = Double(newBudgetAmount), let category = selectedCategory else { return }
-            let budget = Budget(name: newBudgetName, amount: amount, category: category)
-            budgets.append(budget)
-            resetBudgetForm()
+        guard let amount = Double(newBudgetAmount), amount.isFinite else { return }
+
+        // Falls keine Kategorie ausgewählt wurde, erstelle ein Budget für "All Categories"
+        let budgetCategory = selectedCategory ?? Category(symbol: "tray.fill", name: "All Categories", color: .gray, parentCategory: "All Categories")
+
+        let budget = Budget(name: newBudgetName, amount: amount, category: budgetCategory)
+        budgets.append(budget)
+        resetBudgetForm()
     }
     
     func startEditingBudget(_ budget: Budget) {
@@ -277,7 +287,7 @@ class TransactionsViewModel: ObservableObject {
         newBudgetName = budget.name
         newBudgetAmount = String(budget.amount)
         selectedCategory = budget.category
-        isAddingBudget = true 
+        activeSheet = .budgetForm
     }
     
     func updateBudget() {

@@ -12,58 +12,96 @@ struct BudgetsView: View {
 
     var body: some View {
         NavigationView {
-            VStack {
-                // **Filter-Button, Titel und Plus-Button**
-                HStack {
-                    Button(action: {
-                        viewModel.isFilterSheetPresented = true
-                    }) {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                            .font(.title2)
+            ZStack {
+                Color(UIColor.systemBackground)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    HStack {
+                        Button(action: {
+                            viewModel.activeSheet = .filter
+                        }) {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.title2)
+                        }
+                        .padding(.leading)
+
+                        Spacer()
+                        Text("Budgets for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
+                            .font(.headline)
+                        Spacer()
+
+                        Button(action: {
+                            viewModel.activeSheet = .budgetForm
+                            viewModel.isEditingBudget = false
+                            viewModel.resetBudgetForm()
+                        }) {
+                            Image(systemName: "plus")
+                        }
+                        .padding(.trailing)
                     }
-                    .padding(.leading)
+                    .padding(.top)
+                    .padding(.bottom)
+                    .background(Color(UIColor.systemBackground)) // Hintergrund für den Header
 
-                    Spacer()
-                    Text("Budgets for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
-                        .font(.headline)
-                    Spacer()
+                    BudgetPieChartView(viewModel: viewModel)
 
-                    Button(action: {
-                        viewModel.isAddingBudget = true
-                        viewModel.isEditingBudget = false // Neue Budget-Erstellung
-                        viewModel.resetBudgetForm()
-                    }) {
-                        Image(systemName: "plus")
-                    }
-                    .padding(.trailing)
-                }
-                // **Pie Chart**
-                BudgetPieChartView(viewModel: viewModel)
+                    if viewModel.filteredBudgets.isEmpty {
+                        // Zeige eine Nachricht an, wenn keine Budgets vorhanden sind
+                        VStack {
+                            Image(systemName: "tray.fill") // Symbol für leere Liste
+                                .font(.largeTitle)
+                                .foregroundColor(.gray)
+                                .padding(.bottom, 10)
 
-                List {
-                    ForEach(viewModel.filteredBudgets, id: \.id) { budget in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(budget.name)
-                                    .font(.headline)
-                                Text("Category: \(budget.category.name)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
+                            Text("No Budgets Available")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                                .padding(.bottom, 5)
+
+                            Text("Tap the '+' button to add a budget.")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        List {
+                            ForEach(viewModel.filteredBudgets, id: \.id) { budget in
+                                HStack {
+                                    Image(systemName: budget.category.symbol)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(budget.category.color)
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text(budget.name)
+                                            .font(.headline)
+                                        Text(budget.category.name)
+                                            .font(.subheadline)
+                                            .foregroundColor(budget.category.color)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.leading, 8)
+                                    
+                                    Spacer()
+                                    
+                                    Text(String(format: "$%.2f", budget.amount))
+                                        .foregroundColor(.primary)
+                                }
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    viewModel.startEditingBudget(budget)
+                                }
                             }
-                            Spacer()
-                            Text(String(format: "$%.2f", budget.amount))
-                                .foregroundColor(.primary)
+                            .onDelete { indexSet in
+                                viewModel.deleteBudget(at: indexSet)
+                            }
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            viewModel.startEditingBudget(budget)
-                        }
-                    }
-                    .onDelete { indexSet in
-                        viewModel.deleteBudget(at: indexSet)
+                        .listStyle(PlainListStyle())
+                        .scrollContentBackground(.visible)
                     }
                 }
-
             }
             .navigationTitle("Budgets")
             .toolbar {
@@ -78,24 +116,9 @@ struct BudgetsView: View {
                         .foregroundColor(viewModel.overallTotalBudget() < 0 ? .red : .primary)
                 }
             }
-            .sheet(isPresented: $viewModel.isFilterSheetPresented, onDismiss: {
-                viewModel.isShowingTransactionForm = false
-                viewModel.isAddingBudget = false
-            }) {
-                FilterView(viewModel: viewModel)
-            }
-            .sheet(isPresented: $viewModel.isAddingBudget, onDismiss: {
-                viewModel.isFilterSheetPresented = false
-            }) {
-                BudgetFormView(viewModel: viewModel, onSave: {
-                    if viewModel.isEditingBudget {
-                        viewModel.updateBudget()
-                    } else {
-                        viewModel.addBudget()
-                    }
-                    viewModel.isAddingBudget = false
-                })
-            }
+        }
+        .onDisappear {
+            viewModel.activeSheet = nil
         }
     }
 }

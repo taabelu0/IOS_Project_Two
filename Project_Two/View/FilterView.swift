@@ -13,10 +13,6 @@ struct FilterView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Select a Filter")
-                    .font(.headline)
-                    .padding()
-
                 List {
                     // ✅ **"All Transactions" Option**
                     Button(action: {
