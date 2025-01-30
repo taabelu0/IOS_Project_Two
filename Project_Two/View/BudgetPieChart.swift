@@ -50,7 +50,7 @@ struct BudgetPieChartView: View {
                         .foregroundColor(isOverBudget ? .red : .primary)
                 }
 
-                // **3-Spalten Legende (nur sichtbare Daten im Chart)**
+                // 3-Spalten Legende (nur sichtbare Daten im Chart)
                 let visibleData = data.filter { $0.amount > 0 } // Nur Kategorien mit Transaktionen
 
                 LazyVGrid(columns: [

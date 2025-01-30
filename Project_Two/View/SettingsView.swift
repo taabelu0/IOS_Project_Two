@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
-    
+    @ObservedObject var viewModel: TransactionsViewModel
+
     var body: some View {
         NavigationView {
             Form {
@@ -20,15 +20,18 @@ struct SettingsView: View {
                 
                 Section(header: Text("Preferences")) {
                     Toggle("Notifications Enabled", isOn: .constant(false))
-                    Toggle("Dark Mode", isOn: $isDarkMode)
+                    Toggle("Dark Mode", isOn: $viewModel.isDarkMode)
                 }
                 
                 Section {
-                    Button("Log Out") {
+                    Button(action: {
+                        viewModel.isLoggedIn = false
+                    }) {
+                        Text ("Logout")
                     }
                 }
             }
-            .preferredColorScheme(isDarkMode ? .dark : .light)
+            .preferredColorScheme(viewModel.isDarkMode ? .dark : .light)
             .navigationTitle("Settings")
         }
     }

@@ -7,7 +7,9 @@
 import SwiftUI
 
 class TransactionsViewModel: ObservableObject {
-    
+    @AppStorage("isLoggedIn") var isLoggedIn = false
+    @AppStorage("isDarkMode") var isDarkMode: Bool = false
+
     // Transactions and categories
     @Published var parentCategories: [String: Color] = [
         "Essentials": Color(hue: 0.75, saturation: 1.0, brightness: 1.0), // Violett
