@@ -4,7 +4,6 @@
 //
 //  Created by Luca Bertonazzi on 25.01.2025.
 //
-
 import SwiftUI
 
 struct DashboardView: View {
@@ -13,129 +12,115 @@ struct DashboardView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 16) {                    
-                    // Gesamtbudget Übersicht als Tabelle
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Budget Overview")
-                            .font(.title2)
-                            .bold()
-                        
-                        HStack {
-                            Text("Budget")
-                                .bold()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text("Total")
-                                .bold()
-                                .frame(maxWidth: .infinity)
-                            Text("Remaining")
-                                .bold()
-                                .frame(maxWidth: .infinity, alignment: .trailing)
+                VStack{
+                    HStack{
+                        Button(action: {
+                            viewModel.activeSheet = .filter
+                        }) {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .font(.title2)
                         }
-                        .padding(.vertical, 5)
-                        .padding(.horizontal, 4)
-                        .background(Color.gray.opacity(0.2))
+                        .padding(.leading)
+
+                        Spacer()
                         
-                        // Einmal für das Gesamtbudget
-                        HStack {
-                            Text("Total Budget")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text(String(format: "%.2f", viewModel.overallBudgetLimit()))
-                                .frame(maxWidth: .infinity)
-                            Text(String(format: "%.2f", viewModel.overallTotalBudget()))
-                                .foregroundColor(
-                                    viewModel.overallTotalBudget() < 0 ? .red : .green)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
+                        Text("\(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
+                            .font(.headline)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            viewModel.activeSheet = .categoryForm
+                        }) {
+                            Image(systemName: "folder.badge.plus")
                         }
+                        .padding(.trailing)
+                    }
+                    .padding(.top)
+                    .padding(.bottom)
+                    .background(Color(UIColor.systemBackground))
+
+                    Spacer()
+                    
+                    BudgetPieChartView(viewModel: viewModel)
+                    
+                    Spacer()
+                    
+                    Text("5 Most Expensive Transactions")
+                        .font(.title2)
                         .bold()
-                        .padding(.vertical, 2)
-                        
-                        ForEach(viewModel.budgets.sorted(by: { $0.amount > $1.amount }), id: \.id) { budget in
-                            let spent = viewModel.totalForCategory(budget.category)
-                            let remaining = budget.amount - spent
-                            
-                            HStack {
-                                Text(budget.name)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                Text(String(format: "%.2f", budget.amount))
-                                    .frame(maxWidth: .infinity)
-                                Text(String(format: "%.2f", remaining))
-                                    .foregroundColor(remaining < 0 ? .red : .green)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                            }
-                            .padding(.vertical, 2)
-                        }
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue.opacity(0.1)))
+                        .padding(.leading)
                     
-                    // Warnung für überschrittene Budgets
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Exceeded Budgets")
-                            .font(.title2)
-                            .bold()
-                            .foregroundColor(.red)
-                        
-                        let exceededBudgets = viewModel.budgets.filter { budget in
-                            let spent = viewModel.totalForCategory(budget.category)
-                            return spent > budget.amount
-                        }
-                        
-                        if exceededBudgets.isEmpty {
-                            Text("No budgets exceeded 🎉")
-                                .foregroundColor(.green)
-                        } else {
-                            ForEach(exceededBudgets, id: \.id) { budget in
-                                let spent = viewModel.totalForCategory(budget.category)
-                                let exceededAmount = spent - budget.amount
-                                
-                                HStack {
-                                    Text(budget.name)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(String(format: "%.2f", budget.amount))
-                                        .frame(maxWidth: .infinity)
-                                    Text(String(format: "%.2f", exceededAmount))
-                                        .foregroundColor(.red)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                }
-                                .padding(.vertical, 2)
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.red.opacity(0.1)))
-                    
-                    
-                    // Übersicht der teuersten 5 Transaktionen
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("5 Most Expensive Transactions")
-                            .font(.title2)
-                            .bold()
-                        
-                        let topTransactions = viewModel.transactions.sorted(by: { $0.amount > $1.amount }).prefix(5)
-                        
-                        if topTransactions.isEmpty {
-                            Text("No transactions available")
+                    if viewModel.filteredTransactions.isEmpty {
+                        VStack {
+                            Image(systemName: "tray.fill")
+                                .font(.largeTitle)
                                 .foregroundColor(.gray)
-                        } else {
-                            ForEach(topTransactions, id: \.id) { transaction in
-                                HStack {
-                                    Text(transaction.name)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(transaction.category.name)
-                                        .frame(maxWidth: .infinity)
-                                    Text(String(format: "%.2f", transaction.amount))
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                .padding(.bottom, 10)
+                            
+                            Text("No Transactions Available")
+                                .font(.title2)
+                                .foregroundColor(.gray)
+                                .padding(.bottom, 5)
+                            
+                            Text("Tap the '+' button to add a transaction.")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        VStack(spacing: 10) {
+                            let topTransactions = viewModel.filteredTransactions
+                                .sorted(by: { $0.amount > $1.amount })
+                                .prefix(5)
+                            
+                            ForEach(topTransactions, id: \ .id) { transaction in
+                                HStack(alignment: .center) {
+                                    Image(systemName: transaction.category.symbol)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(transaction.category.color)
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text(transaction.name)
+                                            .font(.headline)
+                                        Text(transaction.category.name)
+                                            .font(.subheadline)
+                                            .foregroundColor(transaction.category.color)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.leading, 8)
+                                    
+                                    Spacer()
+                                    
+                                    Text(String(format: "$%.2f", transaction.amount))
+                                        .foregroundColor(transaction.amount < 0 ? .red : .primary)
                                 }
-                                .padding(.vertical, 2)
+                                .padding(.vertical, 5)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    viewModel.startEditingTransaction(transaction)
+                                }
                             }
                         }
+                        .padding()
                     }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.1)))
-                    
                 }
-                .padding()
-                .navigationTitle("Dashboard")
+            }
+            .navigationTitle("Dashboard")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Remaining for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
+                        .font(.headline)
+                        .foregroundColor(viewModel.overallTotalBudget() < 0 ? .red : .primary)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Text(String(format: "$%.2f", viewModel.totalBudget() - viewModel.totalSpent()))
+                        .font(.headline)
+                        .bold()
+                        .foregroundColor(viewModel.totalSpent() > viewModel.totalBudget() ? .red : .primary)
+                }
             }
         }
     }

@@ -27,7 +27,7 @@ struct BudgetsView: View {
                         .padding(.leading)
 
                         Spacer()
-                        Text("Budgets for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
+                        Text("\(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter) Budgets")
                             .font(.headline)
                         Spacer()
 
@@ -43,8 +43,7 @@ struct BudgetsView: View {
                     .padding(.top)
                     .padding(.bottom)
                     .background(Color(UIColor.systemBackground)) // Hintergrund für den Header
-
-                    BudgetPieChartView(viewModel: viewModel)
+                        
 
                     if viewModel.filteredBudgets.isEmpty {
                         // Zeige eine Nachricht an, wenn keine Budgets vorhanden sind
@@ -106,14 +105,14 @@ struct BudgetsView: View {
             .navigationTitle("Budgets")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Text("Total: ")
+                    Text("Total Budget for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
                         .font(.headline)
-                        .foregroundColor(viewModel.overallTotalBudget() < 0 ? .red : .primary)
+                        .foregroundColor(.secondary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Text(String(format: "$%.2f", viewModel.overallTotalBudget()))
+                    Text(String(format: "$%.2f", viewModel.totalBudget()))
                         .font(.headline)
-                        .foregroundColor(viewModel.overallTotalBudget() < 0 ? .red : .primary)
+                        .foregroundColor(.secondary)
                 }
             }
         }

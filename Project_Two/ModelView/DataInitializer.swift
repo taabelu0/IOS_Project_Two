@@ -120,11 +120,11 @@ class DataInitializer {
         ]
         
         budgets = [
-            Budget(name: "Grocery Budget", amount: 500.00, category: Category(symbol: "cart", name: "Groceries", color: initialParentCategories["Essentials"]!, parentCategory: "Essentials")),
-            Budget(name: "Entertainment Budget", amount: 150.00, category: Category(symbol: "tv", name: "Streaming", color: initialParentCategories["Entertainment"]!, parentCategory: "Entertainment")),
-            Budget(name: "Housing Costs", amount: 1800.00, category: Category(symbol: "house", name: "Rent", color: initialParentCategories["Housing"]!, parentCategory: "Housing")),
-            Budget(name: "Shopping Budget", amount: 300.00, category: Category(symbol: "bag.fill", name: "Clothing", color: initialParentCategories["Shopping"]!, parentCategory: "Shopping")),
-            Budget(name: "Utilities", amount: 200.00, category: Category(symbol: "bolt", name: "Electricity", color: initialParentCategories["Utilities"]!, parentCategory: "Utilities")),
+            Budget(name: "Grocery", amount: 500.00, category: Category(symbol: "cart", name: "Groceries", color: initialParentCategories["Essentials"]!, parentCategory: "Essentials")),
+            Budget(name: "Streaming", amount: 150.00, category: Category(symbol: "tv", name: "Streaming", color: initialParentCategories["Entertainment"]!, parentCategory: "Entertainment")),
+            Budget(name: "Rent", amount: 1800.00, category: Category(symbol: "house", name: "Rent", color: initialParentCategories["Housing"]!, parentCategory: "Housing")),
+            Budget(name: "Clothing", amount: 300.00, category: Category(symbol: "bag.fill", name: "Clothing", color: initialParentCategories["Shopping"]!, parentCategory: "Shopping")),
+            Budget(name: "Electricity", amount: 200.00, category: Category(symbol: "bolt", name: "Electricity", color: initialParentCategories["Utilities"]!, parentCategory: "Utilities")),
             Budget(name: "Dining Out", amount: 100.00, category: Category(symbol: "fork.knife", name: "Dining Out", color: initialParentCategories["Entertainment"]!, parentCategory: "Entertainment")),
             
         ]

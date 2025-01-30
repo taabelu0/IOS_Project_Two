@@ -25,14 +25,12 @@ struct TransactionsView: View {
                         }
                         .padding(.leading)
 
-                        Spacer(minLength: 1)
+                        Spacer()
+                        
+                        Text("\(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter) Transactions")
+                            .font(.headline)
 
-                        Button(action: {
-                            viewModel.activeSheet = .categoryForm
-                        }) {
-                            Image(systemName: "folder.badge.plus")
-                        }
-                        .padding(.trailing)
+                        Spacer()
 
                         Button(action: {
                             viewModel.activeSheet = .transactionForm
@@ -105,6 +103,18 @@ struct TransactionsView: View {
                 }
             }
             .navigationTitle("Transactions")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Total Spent for \(viewModel.selectedFilter == "All" ? "All Categories" : viewModel.selectedFilter)")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Text(String(format: "$%.2f", viewModel.totalSpent()))
+                        .font(.headline)
+                        .foregroundColor(.red)
+                }
+            }
         }
         .onDisappear {
             viewModel.activeSheet = nil

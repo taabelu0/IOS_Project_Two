@@ -16,8 +16,8 @@ struct CategoryFormView: View {
     var body: some View {
         NavigationView {
             VStack {
-                TextField("Category Name", text: $viewModel.newCategoryName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                
+                NeumorphicStyleTextField(color: viewModel.parentCategories[viewModel.selectedParentCategory ?? ""] ?? .secondary, textField: TextField("Category Name", text: $viewModel.newCategoryName), imageName: "pencil")
                     .padding()
                 
                 Picker("Parent Category", selection: $viewModel.selectedParentCategory) {
@@ -25,10 +25,12 @@ struct CategoryFormView: View {
                     ForEach(viewModel.parentCategories.keys.sorted(), id: \.self) { parent in
                         Text(parent).tag(parent as String?)
                     }
+                    .foregroundColor(viewModel.parentCategories[viewModel.selectedParentCategory ?? ""] ?? .secondary)
+
                 }
                 .pickerStyle(MenuPickerStyle())
-                .padding()
-                
+                .accentColor(viewModel.parentCategories[viewModel.selectedParentCategory ?? ""] ?? .secondary)
+                                
                 Button(action: {
                     viewModel.addCategory()
                     viewModel.activeSheet = nil // ✅ Neues Schließen des Modals mit `activeSheet`
@@ -36,8 +38,12 @@ struct CategoryFormView: View {
                     Text("Save")
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(viewModel.newCategoryName.isEmpty || viewModel.selectedParentCategory == nil ? Color.gray : Color.green)
-                        .foregroundColor(.white)
+                        .background(
+                                viewModel.newCategoryName.isEmpty || viewModel.selectedParentCategory == nil ?
+                                Color(UIColor.tertiarySystemBackground) :
+                                (viewModel.parentCategories[viewModel.selectedParentCategory ?? ""] ?? .secondary)
+                            )
+                        .foregroundColor(viewModel.newCategoryName.isEmpty || viewModel.selectedParentCategory == nil ? Color(UIColor.systemGray) : Color.white)
                         .cornerRadius(8)
                         .padding(.horizontal)
                 }

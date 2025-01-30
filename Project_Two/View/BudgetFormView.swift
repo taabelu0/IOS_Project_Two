@@ -15,20 +15,21 @@ struct BudgetFormView: View {
     var body: some View {
         NavigationView {
             VStack {
-                TextField("Budget Name", text: $viewModel.newBudgetName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-
-                TextField("Amount", text: Binding(
-                    get: { viewModel.newBudgetAmount },
-                    set: { newValue in
-                        let filtered = newValue.filter { "0123456789.".contains($0) }
-                        viewModel.newBudgetAmount = filtered
-                    }
-                ))
-                .keyboardType(.decimalPad)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                HStack {
+                    NeumorphicStyleTextField(color: viewModel.selectedCategory?.color ?? Color(Color(uiColor: .systemGray6)), textField: TextField("Budget Name", text: $viewModel.newBudgetName), imageName: "pencil")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    NeumorphicStyleTextField(color: viewModel.selectedCategory?.color ?? Color(Color(uiColor: .systemGray6)), textField: TextField("Amount", text: Binding(
+                        get: { viewModel.newBudgetAmount },
+                        set: { newValue in
+                            let filtered = newValue.filter { "0123456789.".contains($0) }
+                            viewModel.newBudgetAmount = filtered
+                        }
+                    )) ,imageName: "dollarsign.circle")
+                        .keyboardType(.decimalPad)
+                        .frame(width: 120, alignment: .trailing)
+                }
+                .padding(.horizontal)
+                .padding(.top)
 
                 Button(action: {
                     viewModel.showCategoryPicker = true
@@ -40,13 +41,16 @@ struct BudgetFormView: View {
                     }
                     .padding()
                     .background(Color(UIColor.secondarySystemBackground))
+                    .foregroundColor(viewModel.selectedCategory?.color ?? Color(Color(uiColor: .systemGray)))
                     .cornerRadius(8)
                 }
-                .padding(.horizontal)
+                .padding()
                 .sheet(isPresented: $viewModel.showCategoryPicker) {
                     CategorySelectionView(viewModel: viewModel, allowAllCategories: true)
                 }
 
+                Spacer()
+                
                 Button(action: {
                     if let amount = Double(viewModel.newBudgetAmount), amount.isFinite {
                         if viewModel.isEditingBudget {
@@ -56,11 +60,11 @@ struct BudgetFormView: View {
                         }
                         dismiss()
                     }
-                }) {
-                    Text("Save Budget")
+                }){
+                    Text("Save")
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(viewModel.newBudgetName.isEmpty || viewModel.newBudgetAmount.isEmpty ? Color(UIColor.tertiarySystemBackground) : Color.blue)
+                        .background(viewModel.newBudgetName.isEmpty || viewModel.newBudgetAmount.isEmpty ? Color(UIColor.tertiarySystemBackground) : viewModel.selectedCategory?.color ?? .secondary)
                         .foregroundColor(viewModel.newBudgetName.isEmpty || viewModel.newBudgetAmount.isEmpty ? Color(UIColor.systemGray) : Color.white)
                         .cornerRadius(8)
                         .padding(.horizontal)
@@ -69,6 +73,7 @@ struct BudgetFormView: View {
 
                 Spacer()
             }
+            .padding(.top)
             .padding()
             .background(Color(UIColor.systemBackground))
             .cornerRadius(20)

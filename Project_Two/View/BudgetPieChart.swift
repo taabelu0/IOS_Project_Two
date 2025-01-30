@@ -70,7 +70,7 @@ struct BudgetPieChartView: View {
                         }
                     }
                 }
-                .padding(.top, 10)
+                .padding( 10)
             } else {
                 Text(String(format: "$%.2f", remainingBudget))
                     .font(.title)
