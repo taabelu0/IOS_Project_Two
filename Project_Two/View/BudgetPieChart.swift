@@ -12,7 +12,6 @@ struct BudgetPieChartView: View {
 
     var body: some View {
         VStack {
-
             let data = viewModel.selectedFilter == "All"
                 ? viewModel.budgetDataForParentCategories()
                 : viewModel.budgetDataForSubcategories()
@@ -31,7 +30,7 @@ struct BudgetPieChartView: View {
                                 innerRadius: .ratio(0.7),
                                 outerRadius: .ratio(1.0)
                             )
-                            .foregroundStyle(item.color) // **Jede Kategorie bekommt ihre eigene Farbe**
+                            .foregroundStyle(item.color)
                         }
 
                         if remainingBudget > 0 {
@@ -50,8 +49,29 @@ struct BudgetPieChartView: View {
                         .bold()
                         .foregroundColor(isOverBudget ? .red : .primary)
                 }
+
+                // **3-Spalten Legende (nur sichtbare Daten im Chart)**
+                let visibleData = data.filter { $0.amount > 0 } // Nur Kategorien mit Transaktionen
+
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), alignment: .leading),
+                    GridItem(.flexible(), alignment: .leading),
+                    GridItem(.flexible(), alignment: .leading)
+                ], spacing: 8) {
+                    ForEach(visibleData.indices, id: \.self) { index in
+                        let item = visibleData[index]
+                        HStack {
+                            Circle()
+                                .fill(item.color)
+                                .frame(width: 12, height: 12)
+                            Text(item.name)
+                                .font(.caption)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                }
+                .padding(.top, 10)
             } else {
-                // Falls kein Budget vorhanden ist, nur Zahl anzeigen
                 Text(String(format: "$%.2f", remainingBudget))
                     .font(.title)
                     .bold()
@@ -61,4 +81,3 @@ struct BudgetPieChartView: View {
         .padding()
     }
 }
-
